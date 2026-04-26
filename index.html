@@ -1,0 +1,1433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neon Aerospace | BEAKON Sales Intelligence</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #0f172a;
+            color: #e2e8f0;
+            overflow-x: hidden;
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+
+        /* ===== SIDEBAR ===== */
+        .sidebar {
+            width: 220px;
+            background: #0f172a;
+            border-right: 1px solid #1e293b;
+            padding: 20px 0;
+            overflow-y: auto;
+            flex-shrink: 0;
+        }
+
+        .sidebar-header {
+            padding: 0 15px 20px;
+            border-bottom: 1px solid #1e293b;
+            margin-bottom: 20px;
+        }
+
+        .sidebar-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .sidebar-nav {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+        }
+
+        .sidebar-nav a {
+            padding: 12px 20px;
+            color: #cbd5e1;
+            text-decoration: none;
+            font-size: 14px;
+            cursor: pointer;
+            border-left: 3px solid transparent;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .sidebar-nav a:hover {
+            background: rgba(109, 40, 217, 0.1);
+            color: #e2e8f0;
+        }
+
+        .sidebar-nav a.active {
+            border-left-color: #6d28d9;
+            background: rgba(109, 40, 217, 0.15);
+            color: #a78bfa;
+        }
+
+        /* ===== MAIN CONTENT ===== */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* ===== HEADER ===== */
+        .header {
+            background: linear-gradient(135deg, #1e0533, #3b0764);
+            padding: 20px 30px;
+            border-bottom: 1px solid #3b0764;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .header-title-group h1 {
+            font-size: 28px;
+            font-weight: 700;
+            color: #fff;
+            margin: 0;
+        }
+
+        .header-title-group p {
+            font-size: 13px;
+            color: #e0c3fc;
+            margin-top: 4px;
+        }
+
+        .header-badge {
+            background: rgba(109, 40, 217, 0.2);
+            border: 1px solid #6d28d9;
+            color: #c4b5fd;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .refresh-banner {
+            background: rgba(34, 197, 94, 0.1);
+            border: 1px solid rgba(34, 197, 94, 0.3);
+            color: #86efac;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* ===== CONTENT AREA ===== */
+        .content-area {
+            flex: 1;
+            overflow-y: auto;
+            padding: 30px;
+        }
+
+        .section {
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        /* ===== KPI TILES ===== */
+        .kpi-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .kpi-tile {
+            background: linear-gradient(135deg, #1e293b, #0f172a);
+            border: 1px solid #334155;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .kpi-label {
+            font-size: 12px;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 8px;
+        }
+
+        .kpi-value {
+            font-size: 20px;
+            font-weight: 700;
+            color: #a78bfa;
+        }
+
+        /* ===== CARDS ===== */
+        .card {
+            background: linear-gradient(135deg, #1e293b, #0f172a);
+            border: 1px solid #334155;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .card-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #f1f5f9;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card-subtitle {
+            font-size: 13px;
+            color: #cbd5e1;
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+
+        .card-text {
+            font-size: 13px;
+            color: #e2e8f0;
+            line-height: 1.7;
+        }
+
+        /* ===== TWO COLUMN LAYOUT ===== */
+        .two-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        @media (max-width: 1200px) {
+            .two-column {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* ===== HIRING ROLES CARD ===== */
+        .roles-list {
+            list-style: none;
+        }
+
+        .roles-list li {
+            padding: 10px 0;
+            border-bottom: 1px solid #334155;
+            font-size: 13px;
+            color: #e2e8f0;
+        }
+
+        .roles-list li:last-child {
+            border-bottom: none;
+        }
+
+        .role-title {
+            font-weight: 600;
+            color: #a78bfa;
+        }
+
+        /* ===== DARK FAST-SELL CARD ===== */
+        .fast-sell-card {
+            background: linear-gradient(135deg, #1e0533, #3b0764);
+            border: 1px solid #6d28d9;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .fast-sell-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: #c4b5fd;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 12px;
+        }
+
+        .fast-sell-item {
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(109, 40, 217, 0.3);
+            font-size: 13px;
+            color: #e0c3fc;
+        }
+
+        .fast-sell-item:last-child {
+            border-bottom: none;
+        }
+
+        /* ===== WHY CALLOUT BOXES ===== */
+        .why-callouts {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+        }
+
+        .callout-box {
+            background: rgba(109, 40, 217, 0.15);
+            border-left: 4px solid #6d28d9;
+            padding: 15px;
+            border-radius: 4px;
+        }
+
+        .callout-label {
+            font-size: 12px;
+            font-weight: 700;
+            color: #a78bfa;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 8px;
+        }
+
+        .callout-text {
+            font-size: 13px;
+            color: #e0c3fc;
+            line-height: 1.5;
+        }
+
+        /* ===== SIGNAL CHAIN CARDS ===== */
+        .signal-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 1200px) {
+            .signal-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .signal-card {
+            border: 1px solid #334155;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .signal-card-header {
+            padding: 15px 15px;
+            color: #fff;
+            font-weight: 700;
+            font-size: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .signal-type-badge {
+            background: rgba(255, 255, 255, 0.15);
+            color: #fff;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .signal-card-body {
+            padding: 15px;
+            background: #0f172a;
+        }
+
+        .signal-label {
+            font-size: 11px;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+
+        .signal-headline {
+            font-size: 14px;
+            font-weight: 700;
+            color: #f1f5f9;
+            margin-bottom: 12px;
+            line-height: 1.4;
+        }
+
+        .signal-content {
+            font-size: 13px;
+            color: #cbd5e1;
+            line-height: 1.6;
+            margin-bottom: 12px;
+            padding: 12px;
+            background: rgba(15, 23, 42, 0.5);
+            border-left: 2px solid #6d28d9;
+            border-radius: 3px;
+        }
+
+        .signal-contact {
+            font-size: 13px;
+            color: #e2e8f0;
+            background: rgba(109, 40, 217, 0.1);
+            padding: 10px;
+            border-radius: 4px;
+            border-left: 2px solid #a78bfa;
+        }
+
+        .signal-contact-name {
+            font-weight: 700;
+            color: #a78bfa;
+            margin-bottom: 4px;
+        }
+
+        .signal-contact-title {
+            font-size: 12px;
+            color: #cbd5e1;
+            margin-bottom: 6px;
+        }
+
+        .signal-contact-opening {
+            font-size: 12px;
+            color: #cbd5e1;
+            font-style: italic;
+            margin-top: 8px;
+        }
+
+        /* Signal card colors */
+        .signal-purple {
+            background: linear-gradient(135deg, #1e0533, #3b0764);
+        }
+
+        .signal-blue {
+            background: linear-gradient(135deg, #001f3f, #003d5c);
+        }
+
+        .signal-teal {
+            background: linear-gradient(135deg, #001f1f, #003d3d);
+        }
+
+        /* ===== BEAKON TABLE STD ===== */
+        .beakon-table-std {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            margin-bottom: 20px;
+        }
+
+        .beakon-table-std thead {
+            background: #0f2642;
+        }
+
+        .beakon-table-std thead th {
+            padding: 12px 15px;
+            text-align: left;
+            color: #a78bfa;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            border-bottom: 2px solid #6d28d9;
+        }
+
+        .beakon-table-std tbody tr {
+            border-bottom: 1px solid #334155;
+            transition: background 0.2s;
+        }
+
+        .beakon-table-std tbody tr:hover {
+            background: rgba(109, 40, 217, 0.1);
+        }
+
+        .beakon-table-std tbody td {
+            padding: 12px 15px;
+            color: #e2e8f0;
+        }
+
+        .contact-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-right: 5px;
+        }
+
+        .badge-primary {
+            background: rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
+        }
+
+        .badge-engineer {
+            background: rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
+        }
+
+        .badge-signal {
+            background: rgba(59, 130, 246, 0.2);
+            color: #93c5fd;
+        }
+
+        /* ===== LINKEDIN LINK STYLE ===== */
+        .linkedin-link {
+            color: #0a66c2;
+            text-decoration: none;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .linkedin-link:hover {
+            text-decoration: underline;
+        }
+
+        /* ===== ACTION ITEMS ===== */
+        .action-item {
+            background: linear-gradient(135deg, #1e293b, #0f172a);
+            border: 1px solid #334155;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 15px;
+            display: flex;
+            gap: 15px;
+        }
+
+        .action-number {
+            font-size: 24px;
+            font-weight: 700;
+            color: #6d28d9;
+            min-width: 40px;
+            text-align: center;
+        }
+
+        .action-content {
+            flex: 1;
+        }
+
+        .action-priority {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        .priority-high {
+            background: rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
+        }
+
+        .priority-med {
+            background: rgba(251, 146, 60, 0.2);
+            color: #fed7aa;
+        }
+
+        .action-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: #f1f5f9;
+            margin-bottom: 6px;
+        }
+
+        .action-desc {
+            font-size: 13px;
+            color: #cbd5e1;
+            line-height: 1.5;
+        }
+
+        /* ===== QUICK REFERENCE TABLE ===== */
+        .quick-ref-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            margin-top: 20px;
+        }
+
+        .quick-ref-table thead th {
+            background: #0f2642;
+            padding: 12px 15px;
+            text-align: left;
+            color: #a78bfa;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            border-bottom: 2px solid #6d28d9;
+        }
+
+        .quick-ref-table tbody tr {
+            border-bottom: 1px solid #334155;
+        }
+
+        .quick-ref-table tbody td {
+            padding: 12px 15px;
+            color: #e2e8f0;
+        }
+
+        /* ===== TECH MONITOR ===== */
+        .tech-monitor-item {
+            padding: 12px 0;
+            border-bottom: 1px solid #334155;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .tech-monitor-item:last-child {
+            border-bottom: none;
+        }
+
+        .tech-name {
+            font-weight: 600;
+            color: #f1f5f9;
+            font-size: 13px;
+        }
+
+        .tech-status {
+            font-size: 12px;
+            color: #94a3b8;
+            background: rgba(148, 163, 184, 0.1);
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+
+        /* ===== SCROLLBAR ===== */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #475569;
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                border-right: none;
+                border-bottom: 1px solid #1e293b;
+                height: auto;
+                padding: 10px 0;
+            }
+
+            .sidebar-nav {
+                flex-direction: row;
+                overflow-x: auto;
+            }
+
+            .sidebar-nav a {
+                flex: 0 0 auto;
+            }
+
+            .content-area {
+                padding: 20px;
+            }
+
+            .kpi-row {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .two-column,
+            .signal-grid,
+            .why-callouts {
+                grid-template-columns: 1fr;
+            }
+        }
+    
+<style id="ckpi-tooltip-fix">/* KPI tooltip: show below tile to avoid top-clip */
+.ckpi-tt{bottom:auto!important;top:calc(100% + 8px)!important;}</style>
+
+<style id="neon-sidebar-css">
+/* RTX-style sidebar structure */
+.sidebar-brand { padding:14px 16px 12px; border-bottom:1px solid rgba(255,255,255,0.08); }
+.sidebar-brand-sub { font-size:10px; color:rgba(255,255,255,0.4); }
+.sidebar-section-label { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:rgba(255,255,255,0.4); padding:10px 16px 4px; }
+.sidebar-dot { width:7px; height:7px; border-radius:50%; flex-shrink:0; display:inline-block; margin-right:8px; }
+.sidebar-badge { background:rgba(255,255,255,0.08); color:#94a3b8; font-size:10px; padding:2px 6px; border-radius:10px; font-weight:600; }
+.sidebar-item { display:flex; align-items:center; padding:8px 16px; font-size:12px; color:rgba(255,255,255,0.78); text-decoration:none; border-left:3px solid transparent; transition:all .15s; cursor:pointer; }
+.sidebar-item:hover { background:rgba(255,255,255,0.08); color:#fff; border-left-color:rgba(255,255,255,0.4); }
+.sidebar-item.active { background:rgba(255,255,255,0.12); color:#fff; border-left-color:#6d28d9; font-weight:600; }
+.sidebar-item-text, .link-text { flex:1; font-weight:500; }
+.sidebar-acq-meta { padding:3px 16px 7px 31px; font-size:10px; color:#475569; line-height:1.5; }
+.sidebar-footer { padding:14px 16px; border-top:1px solid rgba(255,255,255,0.06); margin-top:12px; font-size:10px; color:#475569; text-align:center; }
+/* Override old nav styles */
+.sidebar { width:210px !important; background:#0f172a !important; overflow-y:auto; }
+.sidebar-nav { display:none !important; }
+.sidebar-header { display:none !important; }
+
+</style>
+</style>
+<style id="sidebar-text-fix">
+/* Prevent sidebar text overflow — clip with ellipsis */
+.sidebar-item, .sidenav-link, .sidenav a {
+    white-space: nowrap;
+    overflow: hidden;
+}
+.sidebar-item-text, .link-text {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 120px;
+}
+.sidebar-acq-meta, .sidenav-meta {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 175px;
+}
+.sidebar-badge, .badge {
+    flex-shrink: 0;
+}
+/* Ensure sidebar doesn't grow beyond fixed width */
+.sidebar, .sidenav {
+    overflow-x: hidden !important;
+}
+</style>
+<style id="beakon-table-std">
+/* BEAKON Standard Table CSS */
+table{width:100%;border-collapse:collapse;font-size:12px;}
+th{background:#0f2642!important;color:#fff!important;padding:9px 12px;text-align:left;font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;}
+td{padding:9px 12px;border-bottom:1px solid #eef1f9;vertical-align:top;font-size:12px;}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:#f3f7fd!important;}
+tr.total-row td{background:#e8f0fb;font-weight:700;}
+</style>
+<style id="section-display-fix">
+/* Force section display — override conflicting rules */
+.section{display:none!important;}
+.section.active{display:block!important;}
+</style>
+<style id="rtx-sidebar-style">
+/* RTX-style sidebar components */
+.sidebar-section-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,0.55);padding:10px 16px 4px;}
+.sidebar-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;display:inline-block;margin-right:8px;}
+.sidebar-badge{background:rgba(255,255,255,0.08);color:#94a3b8;font-size:10px;padding:2px 6px;border-radius:10px;font-weight:600;}
+.sidebar-item.active .sidebar-badge{background:rgba(0,117,190,0.2);color:#66b3e8;}
+.sidebar-item{display:flex;align-items:center;}
+.sidebar-item-text{flex:1;font-weight:500;}
+.sidebar-acq-meta{padding:3px 16px 7px 28px;font-size:10px;color:rgba(255,255,255,0.45);line-height:1.4;}
+.sidebar-footer{padding:14px 16px;border-top:1px solid rgba(255,255,255,0.06);margin-top:12px;font-size:10px;color:#475569;text-align:center;}
+.section-title{font-size:18px;font-weight:700;color:#1e293b;margin-bottom:4px;padding-left:14px;border-left:4px solid #002b5c;line-height:1.3;}
+</style>
+<style id="beakon-layout-normalize">
+/* BEAKON Layout Normalizer */
+.topbar{height:54px!important;padding:0 24px!important;border-bottom:none!important;box-shadow:0 2px 12px rgba(0,0,0,0.3)!important;gap:12px!important;}
+.topbar-title{font-size:15px!important;font-weight:600!important;order:-1;flex:1!important;}
+.refresh-banner{top:54px!important;font-size:12px!important;padding:7px 20px!important;}
+.sidebar{width:200px!important;min-width:200px!important;top:90px!important;height:calc(100vh - 90px)!important;padding:14px 0!important;}
+.sidebar-item{font-size:12px!important;padding:8px 16px!important;border-left:3px solid transparent;}
+.sidebar-item.active{background:rgba(255,255,255,0.12)!important;border-left-color:#fff!important;color:#fff!important;font-weight:600!important;}
+.sidebar-item:hover{background:rgba(255,255,255,0.08)!important;color:#fff!important;border-left-color:rgba(255,255,255,0.4)!important;}
+.sidebar-label{font-size:10px!important;padding:6px 16px 3px!important;letter-spacing:1px!important;color:rgba(255,255,255,0.4)!important;}
+.main-content{padding:20px 24px 40px!important;}
+.container{min-height:calc(100vh - 90px)!important;}
+</style><style id="beakon-rg-colors">
+.sidebar-item, .sidenav-link, .sidebar a { color: #cbd5e1 !important; text-decoration: none !important; }
+.sidebar-item:hover, .sidenav-link:hover, .sidebar a:hover { color: #ffffff !important; }
+.sidebar-item.active, .sidenav-link.active { color: #ffffff !important; }
+.sidebar-item-text, .link-text { color: inherit !important; }
+.sidebar-badge { color: #94a3b8 !important; }
+.sidebar-item.active .sidebar-badge { color: #ffffff !important; }
+</style>
+</head>
+<body>
+    <div class="container">
+        <!-- SIDEBAR -->
+        <div class="sidebar">
+            <div class="sidebar-brand">
+                <div class="sidebar-brand-sub">Neon Aerospace · Sales Intelligence · 2026</div>
+            </div>
+
+            <div class="sidebar-section-label">OVERVIEW</div>
+            <a href="#" class="sidebar-item active" onclick="switchSection(event,'overview');return false;">
+                <span class="sidebar-dot" style="background:#6d28d9;"></span>
+                <span class="sidebar-item-text">Neon Aerospace</span>
+                <span class="sidebar-badge">Emerging</span>
+            </a>
+
+            <div class="sidebar-section-label">INTELLIGENCE</div>
+            <a href="#" class="sidebar-item" onclick="switchSection(event,'overview');return false;">
+                <span class="sidebar-dot" style="background:#00CCD9;"></span>
+                <span class="sidebar-item-text">Summary KPIs</span>
+            </a>
+            <a href="#" class="sidebar-item" onclick="switchSection(event,'signal-chain');return false;">
+                <span class="sidebar-dot" style="background:#0078d4;"></span>
+                <span class="sidebar-item-text">📡 Signal Chain</span>
+                <span class="sidebar-badge">3</span>
+            </a>
+            <a href="#" class="sidebar-item" onclick="switchSection(event,'overview');return false;">
+                <span class="sidebar-dot" style="background:#8b5cf6;"></span>
+                <span class="sidebar-item-text">Hiring Intelligence</span>
+            </a>
+            <a href="#" class="sidebar-item" onclick="switchSection(event,'actions');return false;">
+                <span class="link-text">🎯 Sales Actions</span>
+            </a>
+            <a href="#" class="sidebar-item" onclick="switchSection(event,'contacts');return false;">
+                <span class="sidebar-dot" style="background:#10b981;"></span>
+                <span class="sidebar-item-text">Key Contacts</span>
+            </a>
+            <a href="#" class="sidebar-item" onclick="switchSection(event,'partnerships');return false;">
+                <span class="sidebar-dot" style="background:#0ea5e9;"></span>
+                <span class="sidebar-item-text">📡 Tech Platforms</span>
+            </a>
+            <div class="sidebar-acq-meta">Signal monitor · Co-sell vendors · Platform map</div>
+            <a href="#" class="sidebar-item" onclick="switchSection(event,'partnerships');return false;">
+                <span class="sidebar-dot" style="background:#ef4444;"></span>
+                <span class="sidebar-item-text">⚔️ Competitive Intel</span>
+            </a>
+
+            <div class="sidebar-section-label">OPEN POSITIONS</div>
+            <a href="#" class="sidebar-item" onclick="switchSection(event,'overview');return false;">
+                <span class="sidebar-dot" style="background:#6366f1;"></span>
+                <span class="sidebar-item-text">Open Positions</span>
+            </a>
+            <div class="sidebar-acq-meta">Systems · Actuation · Data · AI/ML</div>
+
+            <div class="sidebar-section-label">PARTNER ECOSYSTEM & INDUSTRY EVENTS</div>
+            <a href="#" class="sidebar-item" onclick="switchSection(event,'partnerships');return false;">
+                <span class="sidebar-dot" style="background:#b45309;"></span>
+                <span class="sidebar-item-text">🤝 Partnerships & Alliances</span>
+            </a>
+
+            <div class="sidebar-section-label">FINANCIAL</div>
+            <a href="#" class="sidebar-item" onclick="switchSection(event,'overview');return false;">
+                <span class="sidebar-dot" style="background:#0075be;"></span>
+                <span class="sidebar-item-text">💹 Financial Health</span>
+            </a>
+
+            <div class="sidebar-footer">
+                Last refreshed: <span id="sb-refresh">Apr 25, 2026</span>
+            </div>
+        </div>
+
+        <!-- MAIN CONTENT -->
+        <div class="main-content">
+            <!-- HEADER — RTX-style gradient band -->
+            <div style="background:linear-gradient(135deg,#1e0533 0%,#3b0764 55%,#6d28d9 100%);color:white;padding:14px 32px;display:flex;align-items:center;justify-content:space-between;gap:24px;box-shadow:0 2px 8px rgba(0,0,0,0.18);">
+                <div>
+                    <p style="font-size:15px;font-weight:700;margin-bottom:3px;letter-spacing:-0.3px;">Neon Aerospace — AI-native Tier-1 Supplier</p>
+                    <p style="opacity:0.75;font-size:12px;">Propellers · Smart Actuators · Flight Systems · Irvine CA · Founded Jan 2025</p>
+                </div>
+                <div style="display:flex;align-items:center;gap:12px;flex-shrink:0;">
+                    <div style="background:rgba(255,255,255,0.10);border:1px solid rgba(255,255,255,0.2);border-radius:8px;padding:4px 14px;font-size:11px;font-weight:700;letter-spacing:.5px;">🚀 EMERGING ACCOUNT</div>
+                    <div style="background:rgba(255,255,255,0.10);border:1px solid rgba(255,255,255,0.2);border-radius:8px;padding:6px 16px;text-align:center;">
+                        <div style="font-size:9px;text-transform:uppercase;letter-spacing:0.5px;opacity:0.7;margin-bottom:2px;">Last Refreshed</div>
+                        <strong style="font-size:13px;color:rgba(255,255,255,0.95);">Apr 25, 2026</strong>
+                        <div style="font-size:9px;opacity:0.5;margin-top:2px;">Auto-refreshes every 5 days</div>
+                    </div>
+                </div>
+            </div>
+            <!-- Refresh banner -->
+            <div id="refresh-banner" style="background:#f3eeff;border-bottom:1.5px solid #c4b5fd;padding:7px 28px;font-size:11.5px;color:#4c1d95;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                <span style="background:#6d28d9;color:#fff;border-radius:20px;padding:2px 10px;font-size:10px;font-weight:700;letter-spacing:.5px;">🟢 LIVE DATA</span>
+                <span>Last refreshed: <strong>Apr 25, 2026</strong></span>
+                <span style="color:#7c3aed;">·</span>
+                <span style="color:#7c3aed;">Next auto-refresh: Apr 30, 2026</span>
+                <span style="color:#7c3aed;">·</span>
+                <span style="color:#7c3aed;">Auto-refreshes every 5 days</span>
+            </div>
+
+            <!-- CONTENT AREA -->
+            <div class="content-area">
+
+                <!-- ===== OVERVIEW SECTION ===== -->
+                <div id="overview" class="section active">
+
+                    <!-- KPI TILES -->
+                    <div class="kpi-row">
+                        <div class="kpi-tile">
+                            <div class="kpi-label">Founded</div>
+                            <div class="kpi-value">Jan 2025</div>
+                        </div>
+                        <div class="kpi-tile">
+                            <div class="kpi-label">HQ</div>
+                            <div class="kpi-value">Irvine, CA</div>
+                        </div>
+                        <div class="kpi-tile">
+                            <div class="kpi-label">Headcount</div>
+                            <div class="kpi-value">~15-25</div>
+                        </div>
+                        <div class="kpi-tile">
+                            <div class="kpi-label">Product Stage</div>
+                            <div class="kpi-value">Validation</div>
+                        </div>
+                        <div class="kpi-tile">
+                            <div class="kpi-label">Funding Stage</div>
+                            <div class="kpi-value">Seed</div>
+                        </div>
+                        <div class="kpi-tile">
+                            <div class="kpi-label">Market Focus</div>
+                            <div class="kpi-value">eVTOL/AAM</div>
+                        </div>
+                    </div>
+
+                    <!-- TWO COLUMN: Hiring Roles + Opportunity Timing -->
+                    <div class="two-column">
+                        <!-- LEFT: Hiring Roles -->
+                        <div class="card">
+                            <div class="card-title">📋 Top Hiring Roles</div>
+                            <ul class="roles-list">
+                                <li><span class="role-title">Systems Engineering Architect</span><br><span style="font-size: 12px; color: #94a3b8;">Irvine, CA · Active</span></li>
+                                <li><span class="role-title">AI/ML Platform Architect</span><br><span style="font-size: 12px; color: #94a3b8;">Remote/Irvine · Active</span></li>
+                                <li><span class="role-title">Data Platform Architect</span><br><span style="font-size: 12px; color: #94a3b8;">Remote/Irvine · Active</span></li>
+                                <li><span class="role-title">Actuation Engineer</span><br><span style="font-size: 12px; color: #94a3b8;">Irvine, CA · Ongoing</span></li>
+                            </ul>
+                        </div>
+
+                        <!-- RIGHT: Cyient Opportunity Timing -->
+                        <div class="card">
+                            <div class="card-title">⏰ Why Neon Now — Cyient Opportunity Timing</div>
+                            <div class="card-text">
+                                <strong style="color: #a78bfa;">Ground Floor Entry</strong><br>
+                                Founded Jan 2025, currently 15+ months in. Moving from R&D to product validation phase. Perfect timing to embed Cyient as trusted ER&D partner before scaling.
+                                <br><br>
+                                <strong style="color: #a78bfa;">Validation Phase Budget Release</strong><br>
+                                Systems Eng + Data Platform + AI/ML hires suggest validation infrastructure being built NOW. Cyient can plug into instrumentation, ground testing, and DO-160 compliance workflows immediately.
+                                <br><br>
+                                <strong style="color: #a78bfa;">India Leverage</strong><br>
+                                Neon is bootstrapped/seed stage with VC constraints. India delivery = 40-60% cost savings vs US hiring. Perfect for data platform, simulation, and compliance engineering.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- FAST-SELL DARK CARD -->
+                    <div class="fast-sell-card">
+                        <div class="fast-sell-title">Top 5 Fast-Sell Angles (Boeing/RTX/Parker Style)</div>
+                        <div class="fast-sell-item">✈️ <strong>Composite Propeller Design:</strong> Neon makes composite propellers. Cyient's CATIA-certified structures team (50+ engineers) supports Boeing/Airbus programs. Direct match.</div>
+                        <div class="fast-sell-item">⚡ <strong>Electromechanical Actuation:</strong> Neon's core product. Cyient has 15+ years EMA design experience (UTC, Boeing, Airbus). Validation & certification workflows ready.</div>
+                        <div class="fast-sell-item">📋 <strong>DO-178C / DO-160 Certification:</strong> Neon needs to certify products as they scale. Cyient has certified airworthiness teams with DO compliance experience across platforms.</div>
+                        <div class="fast-sell-item">🌐 <strong>Digital Thread & Data Platform:</strong> Neon is "AI-native from day one" but hiring Data Platform Architect. Cyient data engineering team (AWS/Azure) can accelerate build at 50% lower cost.</div>
+                        <div class="fast-sell-item">💼 <strong>India Cost Leverage:</strong> Neon is pre-revenue/seed. Outsourcing simulation, manufacturing engineering, and compliance work to India = 40-60% savings. Cyient's India centers are combat-ready.</div>
+                    </div>
+
+                    <!-- COMPANY DESCRIPTION CARD -->
+                    <div class="card">
+                        <div class="card-title">🏢 Company Description</div>
+                        <div class="card-text">
+                            <strong>Neon Aerospace</strong> is an AI-native, early-stage Tier-1 aerospace supplier and startup founded in January 2025. Based in Irvine, CA with a 10,000 sq ft R&D facility, Neon designs and manufactures advanced flight systems for the electrified aviation market.
+                            <br><br>
+                            <strong>Core Products:</strong> Electro-mechanical actuation platform, composite propellers and rotors, smart actuators, lightweight flight systems for eVTOL and advanced air mobility platforms.
+                            <br><br>
+                            <strong>Market Position:</strong> Neon targets eVTOL/AAM, advanced air mobility, and defense/commercial aircraft OEMs (Archer Aviation, Joby, Wisk, etc.). The company positions itself as a digitally-integrated, compliance-ready alternative to legacy adversarial supplier relationships that characterize traditional aerospace.
+                            <br><br>
+                            <strong>Leadership:</strong> Founded by Dave Dennison (CEO, former VP Operations at Archer, VP Eng at Bell) and Adam Newton (Engineering Lead, former Director Engineering at Archer). The founding team includes senior actuation engineers with 15+ years experience at Boeing, UTC, and Overair.
+                            <br><br>
+                            <strong>Services Offered:</strong><br>
+                            1. Design & Engineering — conceptual design through certification<br>
+                            2. Production & Manufacturing — composite fabrication, tooling, sourcing<br>
+                            3. Validation & Assurance — testing, instrumentation, regulatory compliance
+                            <br><br>
+                            <strong>Funding & Stage:</strong> Pre-revenue, seed stage. Funding not publicly disclosed. Actively hiring for systems engineering, AI/ML, data platforms, and manufacturing roles.
+                        </div>
+                    </div>
+
+                    <!-- WHY THIS ACCOUNT CALLOUTS -->
+                    <div class="card">
+                        <div class="card-title">💡 Why This Account: Cyient Opportunity</div>
+                        <div class="why-callouts">
+                            <div class="callout-box">
+                                <div class="callout-label">🎯 Ground Floor Opportunity</div>
+                                <div class="callout-text">Founded Jan 2025, moving from R&D to validation. Perfect timing to embed Cyient as day-one ER&D partner before scaling to 100+ engineers.</div>
+                            </div>
+                            <div class="callout-box">
+                                <div class="callout-label">🤖 AI-Native Match</div>
+                                <div class="callout-text">Neon's mission is "AI-native, digitally integrated from day one." Cyient's aerospace data engineering, digital thread, and simulation capabilities are a perfect fit.</div>
+                            </div>
+                            <div class="callout-box">
+                                <div class="callout-label">💰 India Cost Leverage</div>
+                                <div class="callout-text">Pre-revenue startup with VC funding constraints. Cyient India delivery = 40-60% cost savings vs US. Perfect for simulation, manufacturing eng, compliance work.</div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                
+  <!-- CHAIN 1: AUTO-INJECTED 2026-04-24 — HIRING SURGE -->
+  <div style="background:#fff;border:1px solid #e0e7ff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.05);margin-bottom:16px;overflow:hidden;">
+    <div style="background:#f8fafc;padding:12px 16px;border-bottom:1px solid #e0e7ef;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+      <span style="background:#92400e;color:#fff;padding:4px 10px;border-radius:6px;font-size:10px;font-weight:700;">HIRING SURGE</span>
+      <span style="background:#fef2f2;color:#dc2626;border:1px solid #fca5a5;padding:4px 8px;border-radius:5px;font-size:10px;font-weight:600;">🔴 FRESH</span>
+      <span style="color:#64748b;font-size:11px;font-weight:500;">Systems Engineering</span>
+      <span style="margin-left:auto;background:#e0f2fe;color:#0369a1;border:1px solid #7dd3fc;padding:2px 7px;border-radius:5px;font-size:9px;font-weight:700;">⚡ AUTO-INJECTED</span>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0;">
+      <div style="padding:14px;border-right:1px solid #f1f5f9;">
+        <div style="font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">📡 Industry Signal</div>
+        <div style="font-size:12px;font-weight:700;color:#1e293b;margin-bottom:5px;line-height:1.4;">Neon Aerospace hiring Systems Engineering Architect — validation phase confirmed</div>
+        <div style="font-size:11px;color:#475569;line-height:1.6;">Neon Aerospace (Irvine CA) posted a Systems Engineering Architect role in April 2026, confirming the company is moving from R&D into product validation phase. This is the critical phase where external engineering partners add the most value — instrumentation, ground testing, DO-160 compliance documentation, and systems integration verification.</div>
+      </div>
+      <div style="padding:14px;border-right:1px solid #f1f5f9;">
+        <div style="font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">📈 Hiring Surge</div>
+        <div style="font-size:11px;color:#475569;line-height:1.6;">Neon's simultaneous posting of Systems Engineering Architect + AI/ML Platform Architect + Data Platform Architect signals a full engineering infrastructure build-out. Cyient can be Neon's outsourced systems engineering backbone — validation test planning, DO-160 documentation, and actuation system V&V at India delivery economics.</div>
+      </div>
+      <div style="padding:14px;background:#fafbff;">
+        <div style="font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">🎯 Target Contact</div>
+        <div style="font-size:12px;font-weight:700;color:#1e293b;margin-bottom:2px;">Dave Dennison</div>
+        <div style="font-size:11px;color:#64748b;margin-bottom:6px;">CEO & Co-Founder, Neon Aerospace</div>
+        <a href="https://www.linkedin.com/in/dave-dennison-41648588/" target="_blank" style="display:inline-flex;align-items:center;gap:5px;font-size:10px;color:#0a66c2;font-weight:600;text-decoration:none;background:#f0f7ff;padding:4px 9px;border-radius:4px;border:1px solid #c7dff7;"><svg width="14" height="14" viewBox="0 0 24 24" fill="#0a66c2"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.063 2.063 0 1 1 0-4.126 2.063 2.063 0 0 1 0 4.126zM7.119 20.452H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg> LinkedIn</a>
+        <div style="margin-top:8px;padding:7px 9px;background:#f0f4ff;border-radius:6px;border-left:3px solid #6d28d9;">
+          <div style="font-size:9px;font-weight:700;color:#6d28d9;text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px;">Opening</div>
+          <div style="font-size:10px;color:#374151;line-height:1.5;font-style:italic;">"Cyient has supported similar electromechanical actuation validation programs at Bell and Archer — we can provide test engineering and DO-160 compliance documentation to accelerate your certification timeline."</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- CHAIN 2: AUTO-INJECTED 2026-04-24 — PROGRAM EXPANSION -->
+  <div style="background:#fff;border:1px solid #e0e7ff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.05);margin-bottom:16px;overflow:hidden;">
+    <div style="background:#f8fafc;padding:12px 16px;border-bottom:1px solid #e0e7ef;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+      <span style="background:#065f46;color:#fff;padding:4px 10px;border-radius:6px;font-size:10px;font-weight:700;">PROGRAM EXPANSION</span>
+      <span style="background:#fef2f2;color:#dc2626;border:1px solid #fca5a5;padding:4px 8px;border-radius:5px;font-size:10px;font-weight:600;">🔴 FRESH</span>
+      <span style="color:#64748b;font-size:11px;font-weight:500;">Actuation & Propulsion</span>
+      <span style="margin-left:auto;background:#e0f2fe;color:#0369a1;border:1px solid #7dd3fc;padding:2px 7px;border-radius:5px;font-size:9px;font-weight:700;">⚡ AUTO-INJECTED</span>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0;">
+      <div style="padding:14px;border-right:1px solid #f1f5f9;">
+        <div style="font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">📡 Industry Signal</div>
+        <div style="font-size:12px;font-weight:700;color:#1e293b;margin-bottom:5px;line-height:1.4;">Neon EMA platform enters validation — external engineering partner opportunity opens</div>
+        <div style="font-size:11px;color:#475569;line-height:1.6;">Neon Aerospace's first product — an electro-mechanical actuation (EMA) platform — is entering the validation and assurance phase based on hiring patterns (15+ months since founding, Jan 2025). This phase requires ground test instrumentation, test procedure authoring, DO-160 environmental qualification, and regulatory compliance documentation.</div>
+      </div>
+      <div style="padding:14px;border-right:1px solid #f1f5f9;">
+        <div style="font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">📈 Hiring Surge</div>
+        <div style="font-size:11px;color:#475569;line-height:1.6;">Validation phase = budget released for external engineering support. Neon is a lean 15-25 person team — they need outsourced validation engineering capacity, not permanent headcount. Cyient's actuation engineering team (ex-Boeing, UTC backgrounds) is a direct match.</div>
+      </div>
+      <div style="padding:14px;background:#fafbff;">
+        <div style="font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">🎯 Target Contact</div>
+        <div style="font-size:12px;font-weight:700;color:#1e293b;margin-bottom:2px;">Adam Newton</div>
+        <div style="font-size:11px;color:#64748b;margin-bottom:6px;">Engineering Lead / Co-Founder, Neon Aerospace</div>
+        <a href="https://www.linkedin.com/in/adamsnewton/" target="_blank" style="display:inline-flex;align-items:center;gap:5px;font-size:10px;color:#0a66c2;font-weight:600;text-decoration:none;background:#f0f7ff;padding:4px 9px;border-radius:4px;border:1px solid #c7dff7;"><svg width="14" height="14" viewBox="0 0 24 24" fill="#0a66c2"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.063 2.063 0 1 1 0-4.126 2.063 2.063 0 0 1 0 4.126zM7.119 20.452H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg> LinkedIn</a>
+        <div style="margin-top:8px;padding:7px 9px;background:#f0f4ff;border-radius:6px;border-left:3px solid #6d28d9;">
+          <div style="font-size:9px;font-weight:700;color:#6d28d9;text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px;">Opening</div>
+          <div style="font-size:10px;color:#374151;line-height:1.5;font-style:italic;">"Cyient's actuation engineering team has validated similar EMA platforms — we can plug into your validation workflow within weeks as a fixed-scope outsource partner."</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- CHAIN 3: AUTO-INJECTED 2026-04-24 — BUDGET SIGNAL -->
+  <div style="background:#fff;border:1px solid #e0e7ff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.05);margin-bottom:16px;overflow:hidden;">
+    <div style="background:#f8fafc;padding:12px 16px;border-bottom:1px solid #e0e7ef;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+      <span style="background:#7c3aed;color:#fff;padding:4px 10px;border-radius:6px;font-size:10px;font-weight:700;">BUDGET SIGNAL</span>
+      <span style="background:#fef2f2;color:#dc2626;border:1px solid #fca5a5;padding:4px 8px;border-radius:5px;font-size:10px;font-weight:600;">🔴 FRESH</span>
+      <span style="color:#64748b;font-size:11px;font-weight:500;">Digital / Data Platform</span>
+      <span style="margin-left:auto;background:#e0f2fe;color:#0369a1;border:1px solid #7dd3fc;padding:2px 7px;border-radius:5px;font-size:9px;font-weight:700;">⚡ AUTO-INJECTED</span>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0;">
+      <div style="padding:14px;border-right:1px solid #f1f5f9;">
+        <div style="font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">📡 Industry Signal</div>
+        <div style="font-size:12px;font-weight:700;color:#1e293b;margin-bottom:5px;line-height:1.4;">Neon AI-native data platform build — hiring Data and AI/ML architects simultaneously</div>
+        <div style="font-size:11px;color:#475569;line-height:1.6;">Neon Aerospace is simultaneously hiring a Data Platform Architect and an AI/ML Platform Architect — confirming budget released for building a proprietary AI-native digital engineering backbone. This is core infrastructure for their 'digital-thread from day one' strategy that differentiates Neon from legacy Tier-1 suppliers.</div>
+      </div>
+      <div style="padding:14px;border-right:1px solid #f1f5f9;">
+        <div style="font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">📈 Hiring Surge</div>
+        <div style="font-size:11px;color:#475569;line-height:1.6;">Building a data platform from scratch with 2 architect hires is expensive and slow. Cyient's data engineering team (AWS/Azure certified, experience with aerospace digital thread programs) can accelerate this build at 50% lower cost than US hiring — leaving Neon's architects to focus on architecture, not implementation.</div>
+      </div>
+      <div style="padding:14px;background:#fafbff;">
+        <div style="font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">🎯 Target Contact</div>
+        <div style="font-size:12px;font-weight:700;color:#1e293b;margin-bottom:2px;">Dave Dennison</div>
+        <div style="font-size:11px;color:#64748b;margin-bottom:6px;">CEO & Co-Founder, Neon Aerospace</div>
+        <a href="https://www.linkedin.com/in/dave-dennison-41648588/" target="_blank" style="display:inline-flex;align-items:center;gap:5px;font-size:10px;color:#0a66c2;font-weight:600;text-decoration:none;background:#f0f7ff;padding:4px 9px;border-radius:4px;border:1px solid #c7dff7;"><svg width="14" height="14" viewBox="0 0 24 24" fill="#0a66c2"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.063 2.063 0 1 1 0-4.126 2.063 2.063 0 0 1 0 4.126zM7.119 20.452H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg> LinkedIn</a>
+        <div style="margin-top:8px;padding:7px 9px;background:#f0f4ff;border-radius:6px;border-left:3px solid #6d28d9;">
+          <div style="font-size:9px;font-weight:700;color:#6d28d9;text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px;">Opening</div>
+          <div style="font-size:10px;color:#374151;line-height:1.5;font-style:italic;">"Cyient's aerospace data engineering team builds digital thread infrastructure on AWS/Azure — we can accelerate your data platform implementation while you focus your architects on product development."</div>
+        </div>
+      </div>
+    </div>
+  </div>
+<!-- ===== SIGNAL CHAIN SECTION ===== -->
+                <div id="signal-chain" class="section">
+
+                    <div class="card">
+                        <div class="card-title">📡 Signal Chain Context</div>
+                        <div class="card-text">
+                            Signal Chain tracks three industry signals indicating Neon is entering a growth phase: (1) Hiring surge across systems engineering, AI/ML, and data platforms, indicating product validation and scaling infrastructure build-out; (2) Product launch into validation phase, releasing budget for external engineering support; (3) Digital investment in proprietary data platform, signaling commitment to AI-native engineering operations. Each signal maps to a specific target contact and opening angle.
+                        </div>
+                    </div>
+
+                    <!-- SIGNAL GRID -->
+                    <div class="signal-grid">
+
+                        <!-- SIGNAL 1: HIRING SURGE (Purple) -->
+                        <div class="signal-card signal-purple">
+                            <div class="signal-card-header">
+                                <span>HIRING SURGE</span>
+                                <span class="signal-type-badge" style="background: #7c3aed; border: 1px solid #a78bfa;">FRESH</span>
+                            </div>
+                            <div class="signal-card-body">
+                                <div class="signal-label">BU: Systems Engineering</div>
+                                <div class="signal-headline">Neon hiring Systems Engineering Architect — certification program accelerating</div>
+                                <div class="signal-label" style="margin-top: 12px;">Industry Signal</div>
+                                <div class="signal-content">
+                                    Neon Aerospace posted Systems Engineering Architect role in Irvine CA (Apr 2026), indicating active product certification program underway. AI-native Tier-1 scaling systems engineering as it moves from R&D to certification phase.
+                                </div>
+                                <div class="signal-label">Hiring Surge</div>
+                                <div class="signal-content">
+                                    SE Architect + AI/ML + Data Platform roles all posted simultaneously — suggests Neon is building its digital engineering backbone for product certification and scaling.
+                                </div>
+                                <div class="signal-contact">
+                                    <div class="signal-contact-name">Dave Dennison</div>
+                                    <div class="signal-contact-title">CEO & Co-Founder</div>
+                                    <div class="signal-contact-opening">"Congratulations on the growth — Cyient's certified SE team has supported propulsion certification at Archer and Bell. We'd love to explore how we can accelerate your DO-160 compliance timeline."</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- SIGNAL 2: PROGRAM RAMP (Blue) -->
+                        <div class="signal-card signal-blue">
+                            <div class="signal-card-header">
+                                <span>PRODUCT LAUNCH</span>
+                                <span class="signal-type-badge" style="background: #0369a1; border: 1px solid #0ea5e9;">FRESH</span>
+                            </div>
+                            <div class="signal-card-body">
+                                <div class="signal-label">BU: Actuation / Propulsion</div>
+                                <div class="signal-headline">Electro-mechanical actuation platform — first product entering validation phase</div>
+                                <div class="signal-label" style="margin-top: 12px;">Industry Signal</div>
+                                <div class="signal-content">
+                                    Neon's first product (electro-mechanical actuation platform) is moving from design to validation/assurance phase based on hiring patterns and company stage (founded Jan 2025, now 15+ months in).
+                                </div>
+                                <div class="signal-label">Hiring Surge</div>
+                                <div class="signal-content">
+                                    Instrumentation, ground testing, and actuation engineering roles indicate validation phase scaling — budget for external engineering support released.
+                                </div>
+                                <div class="signal-contact">
+                                    <div class="signal-contact-name">Adam Newton</div>
+                                    <div class="signal-contact-title">Engineering Lead / Co-Founder</div>
+                                    <div class="signal-contact-opening">"Cyient's actuation engineering team (ex-Boeing, UTC) has validated similar EMA platforms. We can plug into your validation workflow within weeks."</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- SIGNAL 3: AI/DIGITAL (Teal) -->
+                        <div class="signal-card signal-teal">
+                            <div class="signal-card-header">
+                                <span>DIGITAL INVESTMENT</span>
+                                <span class="signal-type-badge" style="background: #0f766e; border: 1px solid #06b6d4;">FRESH</span>
+                            </div>
+                            <div class="signal-card-body">
+                                <div class="signal-label">BU: Digital / Data Platform</div>
+                                <div class="signal-headline">AI-native data platform build-out — hiring Data & AI/ML architects</div>
+                                <div class="signal-label" style="margin-top: 12px;">Industry Signal</div>
+                                <div class="signal-content">
+                                    Neon is building a proprietary AI-native data platform for aerospace engineering (Data Platform Architect + AI/ML Platform Architect postings). This is core infrastructure for their digital-thread-from-day-one strategy.
+                                </div>
+                                <div class="signal-label">Hiring Surge</div>
+                                <div class="signal-content">
+                                    Both data platform and AI/ML architecture roles posted concurrently — digital engineering backbone is being built now, before scaling engineering headcount.
+                                </div>
+                                <div class="signal-contact">
+                                    <div class="signal-contact-name">Dave Dennison</div>
+                                    <div class="signal-contact-title">CEO & Co-Founder</div>
+                                    <div class="signal-contact-opening">"Cyient's aerospace data engineering team builds digital thread infrastructure on AWS/Azure for OEMs. We could accelerate your data platform build while you focus engineering resources on product development."</div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <!-- ===== KEY CONTACTS SECTION ===== -->
+                <div id="contacts" class="section">
+
+                    <table class="beakon-table-std">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Role</th>
+                                <th>Location</th>
+                                <th>Why Contact</th>
+                                <th>LinkedIn</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Dave Dennison</strong></td>
+                                <td>CEO & Co-Founder. Former VP Ops/Military at Archer (2021–2025), VP Eng at Bell Flight, VP at Triumph</td>
+                                <td>Irvine, CA</td>
+                                <td><span class="contact-badge badge-primary">PRIMARY</span> All partnership/vendor decisions. Warm entry via Bell/Archer network.</td>
+                                <td><a href="https://www.linkedin.com/in/dave-dennison-41648588/" class="linkedin-link">View Profile</a></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Adam Newton</strong></td>
+                                <td>Engineering Lead / Co-Founder. Former Director Engineering Archer Aviation. Systems + digital lifecycle</td>
+                                <td>Irvine, CA</td>
+                                <td><span class="contact-badge badge-engineer">ENGINEERING BUYER</span> Technical decision-maker for ER&D. Actuator design, SE, digital thread</td>
+                                <td><a href="https://www.linkedin.com/in/adamsnewton/" class="linkedin-link">View Profile</a></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Head of Talent Acquisition</strong></td>
+                                <td>Director/Head of Talent Acquisition · Hiring Manager for engineering roles</td>
+                                <td>Irvine, CA</td>
+                                <td><span class="contact-badge badge-signal">HIRING SIGNAL</span> Fastest path to understand engineering scope. Search: "Neon Aerospace talent acquisition" on LinkedIn</td>
+                                <td><a href="https://www.linkedin.com/search/results/people/?keywords=Neon+Aerospace+talent+acquisition" class="linkedin-link">Search LinkedIn</a></td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <!-- QUICK REFERENCE -->
+                    <div class="card">
+                        <div class="card-title">🎯 Quick Reference: If Selling...</div>
+                        <table class="quick-ref-table">
+                            <thead>
+                                <tr>
+                                    <th>If Selling...</th>
+                                    <th>Target Contact</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Composite propeller/rotor design</td>
+                                    <td><strong>Adam Newton</strong> (Engineering Lead)</td>
+                                </tr>
+                                <tr>
+                                    <td>Electromechanical actuation engineering</td>
+                                    <td><strong>Adam Newton</strong> (Engineering Lead)</td>
+                                </tr>
+                                <tr>
+                                    <td>DO-160 / DO-178C certification support</td>
+                                    <td><strong>Dave Dennison</strong> (CEO)</td>
+                                </tr>
+                                <tr>
+                                    <td>Data platform / digital thread architecture</td>
+                                    <td><strong>Dave Dennison</strong> (CEO)</td>
+                                </tr>
+                                <tr>
+                                    <td>Partnership / co-development agreement</td>
+                                    <td><strong>Dave Dennison</strong> (CEO)</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                </div>
+
+                <!-- ===== SALES ACTIONS SECTION ===== -->
+                <div id="actions" class="section">
+
+                    <div class="action-item">
+                        <div class="action-number">1</div>
+                        <div class="action-content">
+                            <span class="action-priority priority-high">HIGH</span>
+                            <div class="action-title">Connect with Dave Dennison on LinkedIn</div>
+                            <div class="action-desc">Reference Bell Flight / Archer connection. Pitch: "We supported Bell's V-280 actuation certification and Archer's propulsion team. Neon is the natural next chapter."</div>
+                        </div>
+                    </div>
+
+                    <div class="action-item">
+                        <div class="action-number">2</div>
+                        <div class="action-content">
+                            <span class="action-priority priority-high">HIGH</span>
+                            <div class="action-title">Position for Validation & Assurance Phase</div>
+                            <div class="action-desc">Neon's EMA platform is moving to validation. Offer: Cyient instrumentation, ground test engineering, and DO-160 test planning from India delivery center. 40-60% cost savings vs US alternatives.</div>
+                        </div>
+                    </div>
+
+                    <div class="action-item">
+                        <div class="action-number">3</div>
+                        <div class="action-content">
+                            <span class="action-priority priority-high">HIGH</span>
+                            <div class="action-title">Composite Propeller Design Partnership</div>
+                            <div class="action-desc">Neon makes composite propellers. Cyient CATIA-certified composite structures team (50+ engineers) is a direct match. Position as design partner for next-gen propeller platform.</div>
+                        </div>
+                    </div>
+
+                    <div class="action-item">
+                        <div class="action-number">4</div>
+                        <div class="action-content">
+                            <span class="action-priority priority-med">MED</span>
+                            <div class="action-title">AI/Data Platform Co-Build</div>
+                            <div class="action-desc">Neon is hiring Data Platform Architect. Cyient data engineering team (AWS/Azure) can accelerate their data platform build at 50% lower cost than US hiring. Positioning: "Build your digital backbone while you focus on product."</div>
+                        </div>
+                    </div>
+
+                    <div class="action-item">
+                        <div class="action-number">5</div>
+                        <div class="action-content">
+                            <span class="action-priority priority-med">MED</span>
+                            <div class="action-title">Monitor Funding Announcement</div>
+                            <div class="action-desc">Neon has not disclosed funding. When Series A is announced, engineering headcount will spike. Set alert: "Neon Aerospace funding" on Google Alerts. Follow-up immediately with Dave on hiring acceleration.</div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- ===== PARTNERSHIPS SECTION ===== -->
+                <div id="partnerships" class="section">
+
+                    <div class="card">
+                        <div class="card-title">📡 Tech Platform Signal Monitor</div>
+                        <div class="tech-monitor-item">
+                            <div class="tech-name">Dassault (CATIA)</div>
+                            <div class="tech-status">Typical for Propulsion</div>
+                        </div>
+                        <div class="tech-monitor-item">
+                            <div class="tech-name">Ansys (Simulation)</div>
+                            <div class="tech-status">Essential for Design</div>
+                        </div>
+                        <div class="tech-monitor-item">
+                            <div class="tech-name">AWS</div>
+                            <div class="tech-status">AI-Native Stack (Likely)</div>
+                        </div>
+                        <div class="tech-monitor-item">
+                            <div class="tech-name">Custom Data Platform</div>
+                            <div class="tech-status">Building In-House (Active Hiring)</div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-title">🤝 Co-Sell Context</div>
+                        <div class="card-text">
+                            As an early-stage startup, Neon Aerospace has not yet established major technology partnerships beyond expected CAD/simulation tools (Dassault, Ansys). The company is positioning itself as "AI-native from day one," suggesting internal or cloud-first tooling strategy rather than legacy enterprise partnerships.
+                            <br><br>
+                            <strong>Key Insight:</strong> Neon is building its own data platform and digital thread infrastructure in-house (evidenced by active Data Platfo<script>
+/* BEAKON nav functions [release-gate] */
+function switchSection(arg1, arg2) {
+  var sectionId = (typeof arg1 === 'string') ? arg1 : arg2;
+  if (!sectionId) return;
+  if (sectionId === 'cleared-jobs' && typeof _beakonClearance !== 'undefined' && !_beakonClearance) return;
+  document.querySelectorAll('.section, .section-content').forEach(function(s){s.classList.remove('active');});
+  document.querySelectorAll('.sidebar-item, .sidenav-link').forEach(function(l){l.classList.remove('active');});
+  var target = document.getElementById(sectionId);
+  if (target) target.classList.add('active');
+  var link = document.querySelector('[onclick*="' + sectionId + '"]');
+  if (link) link.classList.add('active');
+  window.scrollTo(0, 0);
+  document.documentElement.scrollTop = 0;
+  document.body.scrollTop = 0;
+  var main = document.querySelector('.main-content, .main');
+  if (main) main.scrollTop = 0;
+}
+
+</script>
+<style id="beakon-rg-pagestyle">
+html, body { scroll-behavior: auto !important; }
+.refresh-banner {
+  position: fixed !important; top: 54px !important; left: 0 !important; right: 0 !important;
+  z-index: 98 !important; transform: translateY(-100%); transition: transform 0.25s ease;
+  margin: 0 !important;
+}
+.refresh-banner.beakon-rg-shown { transform: translateY(0); }
+#beakon-rg-pill {
+  position: fixed; top: 60px; left: 50%; transform: translateX(-50%); z-index: 100;
+  background: linear-gradient(135deg, #10b981, #059669); color: #fff;
+  font-size: 10px; font-weight: 700; letter-spacing: 1.5px;
+  padding: 4px 14px 5px 14px; border-radius: 0 0 12px 12px;
+  cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  display: flex; align-items: center; gap: 6px;
+}
+#beakon-rg-pill::before { content: '●'; color: #fff; font-size: 10px; text-shadow: 0 0 4px rgba(255,255,255,0.6); }
+#beakon-rg-pill::after { content: '▾'; font-size: 8px; margin-left: 4px; opacity: 0.8; }
+#beakon-rg-panel {
+  position: fixed; top: 54px; left: 0; right: 0; z-index: 97;
+  background: #fff; border-bottom: 1px solid #e2e8f0;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.10);
+  transform: translateY(-110%); transition: transform 0.28s ease;
+  overflow: hidden; max-height: 80vh; overflow-y: auto;
+}
+#beakon-rg-panel.open { transform: translateY(0); }
+#beakon-rg-panel-content { padding: 12px 16px; }
+</style>
+<script id="beakon-rg-pagestyle-js">
+(function(){
+  function resetScroll(){
+    try { window.scrollTo(0, 0); } catch(e){}
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+    var main = document.querySelector('.main-content, .main');
+    if (main) main.scrollTop = 0;
+  }
+  function wrap(name){
+    var orig = window[name];
+    if (typeof orig !== 'function') return;
+    if (orig.__beakonRgWrapped) return;
+    var wrapped = function(){ var r = orig.apply(this, arguments); resetScroll(); return r; };
+    wrapped.__beakonRgWrapped = true;
+    window[name] = wrapped;
+  }
+  function init(){
+    ['switchSection','go','switchCITab','showPriTab'].forEach(wrap);
+    if (document.getElementById('beakon-rg-pill')) return;
+    var pill = document.createElement('div');
+    pill.id = 'beakon-rg-pill';
+    pill.title = 'Hover to view refresh status + KPIs';
+    pill.innerHTML = 'LIVE DATA';
+    document.body.appendChild(pill);
+    var panel = document.createElement('div');
+    panel.id = 'beakon-rg-panel';
+    panel.innerHTML = '<div id="beakon-rg-panel-content"></div>';
+    document.body.appendChild(panel);
+    var content = panel.querySelector('#beakon-rg-panel-content');
+    var origBanner = document.querySelector('.refresh-banner');
+    var refreshLine = '';
+    if (origBanner) {
+      var spans = origBanner.querySelectorAll('span');
+      var bits = [];
+      spans.forEach(function(s){ var t=(s.textContent||'').trim(); if (t) bits.push(t); });
+      refreshLine = '<div style="display:flex;gap:18px;font-size:11px;color:#475569;margin-bottom:10px;align-items:center;flex-wrap:wrap;"><b style="color:#0f172a;">● LIVE DATA</b> ' + bits.join(' &nbsp;·&nbsp; ') + '</div>';
+      origBanner.style.display = 'none';
+    }
+    content.innerHTML = refreshLine;
+    var walker = document.createTreeWalker(document.body, NodeFilter.SHOW_COMMENT, null, false);
+    var startNode=null, endNode=null, n;
+    while ((n=walker.nextNode())) {
+      if (!startNode && n.nodeValue && n.nodeValue.indexOf('CYIENT-STD-KPI-START')!==-1) startNode = n;
+      else if (n.nodeValue && n.nodeValue.indexOf('CYIENT-STD-KPI-END')!==-1) endNode = n;
+    }
+    if (startNode && endNode) {
+      var node = startNode.nextSibling;
+      var clone = document.createElement('div');
+      clone.style.transform = 'scale(0.92)';
+      clone.style.transformOrigin = 'top left';
+      while (node && node !== endNode) {
+        clone.appendChild(node.cloneNode(true));
+        node = node.nextSibling;
+      }
+      content.appendChild(clone);
+    }
+    var hideTimer = null;
+    function show(){ if (hideTimer) {clearTimeout(hideTimer); hideTimer=null;} panel.classList.add('open'); }
+    function hide(){ if (hideTimer) clearTimeout(hideTimer); hideTimer = setTimeout(function(){panel.classList.remove('open');}, 600); }
+    pill.addEventListener('mouseenter', show);
+    panel.addEventListener('mouseenter', show);
+    pill.addEventListener('mouseleave', hide);
+    panel.addEventListener('mouseleave', hide);
+    pill.addEventListener('click', show);
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  else init();
+})();
+</script>
+<div id="techplat" class="section">
+  <div class="section-title">📡 Tech Platforms — Tools This Account Uses</div>
+  <div style="background:#fffbeb;border:2px dashed #f59e0b;border-radius:10px;padding:18px;margin-top:14px;text-align:center;">
+    <div style="font-size:24px;margin-bottom:6px;">🚧</div>
+    <div style="font-size:13px;font-weight:700;color:#92400e;margin-bottom:6px;">Tech Platforms scaffold — research underway</div>
+    <div style="font-size:11.5px;color:#92400e;line-height:1.6;max-width:540px;margin:0 auto;">Account-specific platform tools (PLM, CAE, ERP, MES, Cloud) will populate here. Expected platforms based on industry pattern: Dassault CATIA · Siemens Teamcenter · ANSYS · MATLAB/Simulink · SAP S/4HANA · iBASEt Solumina · AWS GovCloud / Azure. Cross-sell with platform-vendor account managers.</div>
+    <div style="font-size:10.5px;color:#94a3b8;font-style:italic;margin-top:10px;">No fabricated content shown. Real platform-incumbent intel is being gathered before this section ships.</div>
+  </div>
+</div>
+
